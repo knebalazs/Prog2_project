@@ -1,101 +1,80 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class trajectory_line : MonoBehaviour
 {
-    [Header("Line renderer veriables")]
-    public LineRenderer line;
-    [Range(2, 30)]
-    public int resolution;
-
-    [Header("Formula variables")]
-    public Vector2 velocity;
-    public float yLimit; //for later
-    private float g;
-
-    [Header("Linecast variables")]
-    [Range(2, 30)]
-    public int linecastResolution;
-    public LayerMask canHit;
+    public float power = 1f;
+    private Vector3 DragStartPosition;
+    Rigidbody2D rb;
+    LineRenderer lr;
 
     void Start()
     {
-        g = Mathf.Abs(Physics2D.gravity.y);
+        rb = GetComponent<Rigidbody2D>();
+        lr = GetComponent<LineRenderer>();
+        
     }
 
     void Update()
     {
-        StartCoroutine(RenderArc());
-    }
-
-    private IEnumerator RenderArc()
-    {
-        line.positionCount = resolution + 1;
-        line.SetPositions(CalculateLineArray());
-        yield return null;
-    }
-
-    private Vector3[] CalculateLineArray()
-    {
-        Vector3[] lineArray = new Vector3[resolution + 1];
-
-        var lowestTimeValue = MaxTimeX() / resolution;
-
-        for (int i = 0; i < lineArray.Length; i++)
+        if (Input.GetMouseButtonDown(0))
         {
-            var t = lowestTimeValue * i;
-            lineArray[i] = CalculateLinePoint(t);
+            DragStartPosition = GameObject.FindGameObjectWithTag("Fisherman").transform.position;
         }
 
-        return lineArray;
-    }
-
-    private Vector2 HitPosition()
-    {
-        var lowestTimeValue = MaxTimeY() / linecastResolution;
-
-        for (int i = 0; i < linecastResolution + 1; i++)
+        if (Input.GetMouseButton(0))
         {
-            var t = lowestTimeValue * i;
-            var tt = lowestTimeValue * (i + 1);
-
-            var hit = Physics2D.Linecast(CalculateLinePoint(t), CalculateLinePoint(tt), canHit);
-
-            if (hit)
-                return hit.point;
+            Vector3 DragEndPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 _velocity = (DragEndPosition - DragStartPosition) * power;
+            
+            Vector2[] trajectory = Plot(rb, (Vector2)transform.position, _velocity, 500);
+            lr.positionCount = trajectory.Length;
+            Vector3[] positions = new Vector3[trajectory.Length];
+            for (int i = 0; i < trajectory.Length; i++)
+            {
+                positions[i] = trajectory[i];
+            }
+            lr.SetPositions(positions);
         }
 
-        return CalculateLinePoint(MaxTimeY());
-    }
-
-    private Vector3 CalculateLinePoint(float t)
-    {
-        float x = velocity.x * t;
-        float y = (velocity.y * t) - (g * Mathf.Pow(t, 2) / 2);
-        return new Vector3(x + transform.position.x, y + transform.position.y);
-    }
-
-    private float MaxTimeY()
-    {
-        var v = velocity.y;
-        var vv = v * v;
-
-        var t = (v + Mathf.Sqrt(vv + 2 * g * (transform.position.y - yLimit))) / g;
-        return t;
-    }
-
-    private float MaxTimeX()
-    {
-        var x = velocity.x;
-        if (x == 0)
+        if (Input.GetMouseButtonUp(0))
         {
-            velocity.x = 000.1f;
-            x = velocity.x;
+            Vector3 DragEndPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 _velocity = (DragEndPosition - DragStartPosition) * power;
+            rb.velocity = _velocity;
+            StartCoroutine(wait_coroutine(1));
+           
+           
         }
 
-        var t = (HitPosition().x - transform.position.x) / x;
-        return t;
+    }
+
+    public Vector2[] Plot(Rigidbody2D rigidbody, Vector2 pos, Vector2 velocity, int steps)
+    {
+        Vector2[] results = new Vector2[steps];
+
+        float timestep = Time.fixedDeltaTime / Physics2D.velocityIterations;
+        Vector2 gravityAccel = Physics2D.gravity * rigidbody.gravityScale * timestep * timestep;
+
+        float drag = 1f - timestep * rigidbody.drag;
+        Vector2 movestep = velocity * timestep;
+
+        for (int i = 0; i < steps; i++)
+        {
+            movestep += gravityAccel;
+            movestep *= drag;
+            pos += movestep;
+            results[i] = pos;
+        }
+
+        return results;
+    }
+
+    IEnumerator wait_coroutine(float wait_time)
+    {
+        yield return new WaitForSeconds(wait_time);
+        lr.SetVertexCount(0);
+
     }
 }
