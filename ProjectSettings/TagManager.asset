@@ -7,6 +7,10 @@ TagManager:
   - Fisherman
   - rope
   - bait
+  - water_body
+  - boat
+  - fishing
+  - background
   layers:
   - Default
   - TransparentFX

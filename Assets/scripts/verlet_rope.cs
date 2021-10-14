@@ -34,7 +34,7 @@ public class verlet_rope : MonoBehaviour
         }
     }
 
-    private void DrawRope()
+    public void DrawRope()
     {
         float lineWidth = this.lineWidth;
         lineRenderer.startWidth = lineWidth;
@@ -119,10 +119,5 @@ public class verlet_rope : MonoBehaviour
                 this.ropeSegments[i + 1] = secondSeg;
             }
         }
-    }
-
-    void Update()
-    {
-        DrawRope();
     }
 }
