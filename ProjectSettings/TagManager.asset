@@ -11,11 +11,12 @@ TagManager:
   - boat
   - fishing
   - background
+  - lamp
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - background
   - Water
   - UI
   - water_body
