@@ -7,7 +7,7 @@ public class fishing : MonoBehaviour
     public float power = 1f;
     public bool is_fishing = false;
     public bool is_casting = false;
-    public bool is_equiped = true;
+    public bool is_equipped = false;
     Vector2 DragStartPosition;
     private Rigidbody2D rb_bait;
     private LineRenderer lr_trajectory;
@@ -23,15 +23,7 @@ public class fishing : MonoBehaviour
 
     }
 
-    void Update()
-    {
-        if (is_equiped)
-        {
-            fishing_call();
-        }
-    }
-
-    private void fishing_call()
+    public void fishing_call()
     {
         GameObject fisherman = GameObject.FindGameObjectWithTag("Fisherman");
         GameObject bait = GameObject.FindGameObjectWithTag("bait");

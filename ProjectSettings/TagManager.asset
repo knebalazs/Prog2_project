@@ -12,6 +12,11 @@ TagManager:
   - fishing
   - background
   - lamp
+  - sun
+  - sky
+  - inventory
+  - ico_inventory
+  - icons
   layers:
   - Default
   - TransparentFX
