@@ -7,6 +7,7 @@ public class my_item
     public enum Item_type
     {
         food,
+        fish,
         drink,
         fishing_rod,
         lamp,
@@ -25,6 +26,8 @@ public class my_item
                 return icon_assets.lamp_sprite;
             case Item_type.fishing_rod:
                 return icon_assets.fishing_rod_sprite;
+            case Item_type.fish:
+                return icon_assets.fish;
         }
     }
 }

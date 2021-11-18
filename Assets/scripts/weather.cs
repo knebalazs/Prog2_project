@@ -6,11 +6,11 @@ public class weather
 {
    public enum weather_type
     {
-        storm,
         rainy,
         cloudy,
         misty,
-        sunny,
+        clear,
+        storm,
         heat_wave
     }
 
@@ -21,6 +21,11 @@ public class weather
     public void set_random()
     {
        type = (weather_type)Random.Range(0, 6);
+    }
+
+    public void set_weather(weather_type new_type)
+    {
+        type = new_type;
     }
 
 }

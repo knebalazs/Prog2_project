@@ -67,8 +67,6 @@ public class player_movement : MonoBehaviour {
 
 
 
-
-
     void walking_movement()
     {
         if (is_moving | is_idle())
@@ -124,6 +122,7 @@ public class player_movement : MonoBehaviour {
             {
                 offset += 0.2f * Time.deltaTime / 10f;
                 sky.GetComponent<Renderer>().material.SetTextureOffset("_MainTex", new Vector2(offset, 0));
+                GameObject.Find("player").GetComponent<stat_controller>().stamina -= 11 * Time.deltaTime;
             }
             if (Input.GetButtonUp("Jump"))
             {

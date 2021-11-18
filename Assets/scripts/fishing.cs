@@ -8,6 +8,8 @@ public class fishing : MonoBehaviour
     public bool is_fishing = false;
     public bool is_casting = false;
     public bool is_equipped = false;
+    public bool is_catching = false;
+    public bool catched = false;
     Vector2 DragStartPosition;
     private Rigidbody2D rb_bait;
     private LineRenderer lr_trajectory;
@@ -32,9 +34,11 @@ public class fishing : MonoBehaviour
         ////////////THROWING////////////
         if (Input.GetMouseButtonDown(0) && is_fishing == false)
         {
+            GameObject.Find("player").GetComponent<stat_controller>().stamina -= 30;
             DragStartPosition = fisherman.transform.position;
             bait.transform.position = fisherman.transform.position;
             is_casting = true;
+            bait.GetComponent<SpriteRenderer>().enabled = false;
         }
 
         if (Input.GetMouseButton(0) && is_fishing == false)
@@ -56,12 +60,24 @@ public class fishing : MonoBehaviour
         ///////////DRAW ROPE//////////
 
         if (is_fishing)
+        {
             GameObject.FindGameObjectWithTag("rope").GetComponent<verlet_rope>().DrawRope();
+            if (Random.Range(0, 1000) == 1)
+            {
+                is_catching = true;
+                catched = true;
+            }
+            if(is_catching == true)
+                rb_bait.velocity = new Vector2 (0, Random.Range(-8,8));
+        }
 
         ///////////PULLING///////////
         if (Input.GetMouseButtonDown(0) && is_fishing == true)
         {
             is_casting = false;
+            is_catching = false;
+            if(catched)
+                bait.GetComponent<SpriteRenderer>().enabled = true;
             Physics2D.IgnoreCollision(bait.GetComponent<CircleCollider2D>(), boat.GetComponent<PolygonCollider2D>());
             DragStartPosition = bait.transform.position;
             Vector2 DragEndPosition = fisherman.transform.position;
@@ -80,6 +96,13 @@ public class fishing : MonoBehaviour
             rb_bait.velocity = Vector2.zero;
             bait.transform.position = fisherman.transform.position;
             is_fishing = false;
+            if (catched)
+            {
+                catched = false;
+                bait.GetComponent<SpriteRenderer>().enabled = false;
+                fisherman.gameObject.GetComponent<player_movement>().invent.add_item(new my_item { item_type = my_item.Item_type.fish, amount = 1 });
+                GameObject.FindGameObjectWithTag("Fisherman").GetComponent<player_movement>().ui_inventory.refresh_inventory();
+            }
             GameObject.FindGameObjectWithTag("rope").GetComponent<LineRenderer>().positionCount = 0;
 
         }

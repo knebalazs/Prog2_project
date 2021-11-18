@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class slot : MonoBehaviour, IDropHandler 
+public class slot : MonoBehaviour, IDropHandler
 {
 
     public int find_pos(GameObject obj)
