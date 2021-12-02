@@ -14,8 +14,8 @@ public class my_inventory
 
         add_item(new my_item { item_type = my_item.Item_type.lamp, amount = 1});
         add_item(new my_item { item_type = my_item.Item_type.fishing_rod, amount = 1 });
-        add_item(new my_item { item_type = my_item.Item_type.fishing_rod, amount = 1 });
-        add_item(new my_item { item_type = my_item.Item_type.fishing_rod, amount = 1 });
+        add_item(new my_item { item_type = my_item.Item_type.bucket, amount = 1 });
+        add_item(new my_item { item_type = my_item.Item_type.bottle, amount = 1 });
     }
 
     public my_item get_item(int pos)

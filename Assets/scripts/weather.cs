@@ -6,8 +6,8 @@ public class weather
 {
    public enum weather_type
     {
-        rainy,
         cloudy,
+        rainy,
         misty,
         clear,
         storm,

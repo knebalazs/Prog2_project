@@ -34,7 +34,11 @@ public class fishing : MonoBehaviour
         ////////////THROWING////////////
         if (Input.GetMouseButtonDown(0) && is_fishing == false)
         {
-            GameObject.Find("player").GetComponent<stat_controller>().stamina -= 30;
+            if (GameObject.Find("player").GetComponent<stat_controller>().stamina - 30 > 0)
+                GameObject.Find("player").GetComponent<stat_controller>().stamina -= 30;
+            else
+                GameObject.Find("player").GetComponent<stat_controller>().stamina = 0;
+
             DragStartPosition = fisherman.transform.position;
             bait.transform.position = fisherman.transform.position;
             is_casting = true;

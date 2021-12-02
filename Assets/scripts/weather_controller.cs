@@ -11,7 +11,7 @@ public class weather_controller : MonoBehaviour
     private GameObject background;
     private UnityEngine.Experimental.Rendering.Universal.Light2D global_light;
     float weather_duration;
-    weather current_weather;
+    public weather current_weather;
     ParticleSystem.EmissionModule rain_emission;
     void Start()
     {
@@ -73,8 +73,6 @@ public class weather_controller : MonoBehaviour
                     set_random_weather();
                 break;
         }
-        Debug.Log(current_weather.type);
-        Debug.Log(weather_duration);
     }
 
 }

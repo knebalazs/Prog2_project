@@ -22,6 +22,7 @@ public class slot : MonoBehaviour, IDropHandler
 
     public void OnDrop(PointerEventData eventData)
     {
+        GameObject.FindGameObjectWithTag("Fisherman").GetComponent<player_movement>().is_draging_item = false;
         int start_pos = find_pos(eventData.pointerDrag.transform.parent.gameObject);
         int end_pos = find_pos(this.gameObject);
         

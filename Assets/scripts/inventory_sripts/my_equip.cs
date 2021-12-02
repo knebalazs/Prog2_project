@@ -29,7 +29,12 @@ public class my_equip : my_inventory {
                 break;
             case my_item.Item_type.food:
                 break;
-            }
+            case my_item.Item_type.bucket:
+                player_ref.bucket_is_equipped = true;
+                break;
+            case my_item.Item_type.bottle:
+                break;
+        }
     }
 
     public void unequipping(int equip_bar_pos, int inventory_pos)
@@ -50,6 +55,10 @@ public class my_equip : my_inventory {
                 break;
             case my_item.Item_type.food:
                 break;
+            case my_item.Item_type.bucket:
+                player_ref.bucket_is_equipped = false;
+                break;
+
         }
     }
 

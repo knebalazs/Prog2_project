@@ -8,9 +8,10 @@ public class my_item
     {
         food,
         fish,
-        drink,
+        bottle,
         fishing_rod,
         lamp,
+        bucket
     }
 
     public Item_type item_type;
@@ -28,6 +29,19 @@ public class my_item
                 return icon_assets.fishing_rod_sprite;
             case Item_type.fish:
                 return icon_assets.fish;
+            case Item_type.bucket:
+                return icon_assets.bucket;
+            case Item_type.bottle:
+                switch (GameObject.Find("player").GetComponent<stat_controller>().bottle_contains)
+                {
+                    case 2:
+                        return icon_assets.bottle_full;
+                    case 1:
+                        return icon_assets.bottle_half;
+                    case 0:
+                        return icon_assets.bottle_empty;
+                }
+                return icon_assets.bottle_full;
         }
     }
 }

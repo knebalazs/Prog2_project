@@ -4,15 +4,21 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class player_movement : MonoBehaviour {
-    float offset;
+    public enum movement {
+        walking,
+        rowing,
+        fishing,
+        bucket,
+        idle
+    }
+
     public Animator anim;
     private SpriteRenderer sp_renderer;
-    private bool is_moving = false;
-    private bool is_rowing = false;
-    private bool is_casting = false;
-    private bool is_fishing = false;
+    public bool bucket_is_equipped = false;
+    public bool is_draging_item;
+    public movement current_movement;
+    float offset;
     GameObject sky;
-    GameObject boat;
     GameObject fishing;
     public GameObject lamp;
     public GameObject inventory;
@@ -26,35 +32,23 @@ public class player_movement : MonoBehaviour {
         sky = GameObject.FindGameObjectWithTag("sky");
         lamp = GameObject.FindGameObjectWithTag("lamp");
         fishing = GameObject.FindGameObjectWithTag("fishing");
-        boat = GameObject.FindGameObjectWithTag("boat");
         inventory = GameObject.FindGameObjectWithTag("inventory");
-        //inventory.SetActive(false);
         invent = new my_inventory();
         equ = new my_equip();
         ui_inventory.set_inventory(invent);
+        inventory.SetActive(false);
         lamp.SetActive(false);
+        is_draging_item = false;
+        current_movement = movement.idle;
     }
 
     void Update() {
-        rowing_movement();
-        walking_movement();
-        if (fishing.GetComponent<fishing>().is_equipped == true)
-        {
-            anim.SetBool("is_fishing_rod_equipped", true);
-            if (EventSystem.current.IsPointerOverGameObject())
-                return;
-            else
-                fishing_movement();
-        }
-        else
-            anim.SetBool("is_fishing_rod_equipped", false);
 
+        watch_movement();
 
 
         if (Input.GetButtonDown("inventory"))
-        {
             inventory.SetActive(!inventory.activeSelf);
-        }
 
 
         if (sp_renderer.flipX)
@@ -62,83 +56,110 @@ public class player_movement : MonoBehaviour {
         else
             lamp.transform.position = this.transform.position + new Vector3(0.55f, 0.08f, 0);
 
-
     }
 
 
-
-    void walking_movement()
+    public void watch_movement()
     {
-        if (is_moving | is_idle())
+        switch (current_movement)
         {
-            if (Input.GetAxis("Horizontal") != 0)
-                is_moving = true;
-            else
-                is_moving = false;
+            case movement.idle:
+                if (Input.GetAxis("Horizontal") != 0)
+                    current_movement = movement.walking;
 
-            float x = Input.GetAxis("Horizontal") * Time.deltaTime * 2f;
-            if (x < 0)
-                sp_renderer.flipX = true;
-            if (x > 0)
-                sp_renderer.flipX = false;
-            transform.Translate(x, 0, 0);
-            anim.SetFloat("Speed", Mathf.Abs(x));
+                if (Input.GetButtonDown("Jump"))
+                {
+                    current_movement = movement.rowing;
+                    anim.SetBool("Is_row", true);
+                    this.sp_renderer.sortingOrder = 3;
+                }
+
+                if (Input.GetButtonDown("use") && bucket_is_equipped == true)
+                {
+                    anim.SetBool("is_bucket_equipped", true);
+                    current_movement = movement.bucket;
+                }
+
+                if (fishing.GetComponent<fishing>().is_equipped == true)
+                {
+                    anim.SetBool("is_fishing_rod_equipped", true);
+                    current_movement = movement.fishing;
+                }
+                else
+                    anim.SetBool("is_fishing_rod_equipped", false);
+
+                break;
+
+            case movement.walking:
+
+                float x = Input.GetAxis("Horizontal") * Time.deltaTime * 2f;
+                if (x < 0)
+                    sp_renderer.flipX = true;
+                if (x > 0)
+                    sp_renderer.flipX = false;
+                transform.Translate(x, 0, 0);
+                anim.SetFloat("Speed", Mathf.Abs(x));
+
+                if (Input.GetAxis("Horizontal") == 0)
+                    current_movement = movement.idle;
+                break;
+            
+            case movement.fishing:
+
+                if (!EventSystem.current.IsPointerOverGameObject())
+                    if(!is_draging_item)
+                        fishing.GetComponent<fishing>().fishing_call();
+
+                if (fishing.GetComponent<fishing>().is_casting)
+                    anim.SetBool("is_casting", true);
+                else
+                    anim.SetBool("is_casting", false);
+                if (fishing.GetComponent<fishing>().is_fishing)
+                    anim.SetBool("is_fishing", true);
+                else
+                    anim.SetBool("is_fishing", false);
+
+                if (fishing.GetComponent<fishing>().is_equipped == false)
+                    current_movement = movement.idle;
+                break;
+
+            case movement.rowing:
+
+                if (Input.GetButton("Jump"))
+                {
+                    offset += 0.2f * Time.deltaTime / 10f;
+                    sky.GetComponent<Renderer>().material.SetTextureOffset("_MainTex", new Vector2(offset, 0));
+                    if (GameObject.Find("player").GetComponent<stat_controller>().stamina > 0)
+                        GameObject.Find("player").GetComponent<stat_controller>().stamina -= 11 * Time.deltaTime;
+                }
+                if (Input.GetButtonUp("Jump") || GameObject.Find("player").GetComponent<stat_controller>().stamina <= 0)
+                {
+                    anim.SetBool("Is_row", false);
+                    this.sp_renderer.sortingOrder = 1;
+                    current_movement = movement.idle;
+                }
+                break;
+
+            case movement.bucket:
+                if (GameObject.Find("player").GetComponent<stat_controller>().boat_status - 20 >= 0)
+                    GameObject.Find("player").GetComponent<stat_controller>().boat_status -= 20 * Time.deltaTime;
+                else
+                    GameObject.Find("player").GetComponent<stat_controller>().boat_status = 0;
+
+                if (GameObject.Find("player").GetComponent<stat_controller>().stamina > 0)
+                    GameObject.Find("player").GetComponent<stat_controller>().stamina -= 20 * Time.deltaTime;
+                else
+                {
+                    GameObject.Find("player").GetComponent<stat_controller>().stamina = 0;
+                    anim.SetBool("is_bucket_equipped", false);
+                    current_movement = movement.idle;
+                }
+                if (Input.GetButtonUp("use"))
+                {
+                    anim.SetBool("is_bucket_equipped", false);
+                    current_movement = movement.idle;
+                }
+                break;
         }
-        else
-            is_moving = false;
-    }
-
-    void fishing_movement()
-    {
-        if (is_fishing | is_idle() )
-        {
-            fishing.GetComponent<fishing>().fishing_call();
-
-
-            if (fishing.GetComponent<fishing>().is_casting)
-                anim.SetBool("is_casting", true);
-            else
-                anim.SetBool("is_casting", false);
-            if (fishing.GetComponent<fishing>().is_fishing)
-                anim.SetBool("is_fishing", true);
-            else
-                anim.SetBool("is_fishing", false);
-        }
-        
-    }
-
-    void rowing_movement()
-    {
-        if (is_rowing | is_idle())
-        {
-            if (Input.GetButtonDown("Jump"))
-            {
-                is_rowing = true;
-                anim.SetBool("Is_row", is_rowing);
-                this.sp_renderer.sortingOrder = 5;
-            }
-
-            if (Input.GetButton("Jump"))
-            {
-                offset += 0.2f * Time.deltaTime / 10f;
-                sky.GetComponent<Renderer>().material.SetTextureOffset("_MainTex", new Vector2(offset, 0));
-                GameObject.Find("player").GetComponent<stat_controller>().stamina -= 11 * Time.deltaTime;
-            }
-            if (Input.GetButtonUp("Jump"))
-            {
-                is_rowing = false;
-                anim.SetBool("Is_row", is_rowing);
-                this.sp_renderer.sortingOrder = 1;
-            }
-        }
-    }
-
-    bool is_idle()
-    {
-
-        if (is_rowing || is_casting || is_fishing || is_moving)
-            return false;
-        else
-            return true;
     }
 }
